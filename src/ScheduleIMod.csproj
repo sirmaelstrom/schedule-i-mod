@@ -5,23 +5,28 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <!-- Conditional compilation symbols -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <DefineConstants>MONO</DefineConstants>
-    <OutputPath>../../build/mono/</OutputPath>
+    <OutputPath>../build/mono/</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <DefineConstants>IL2CPP</DefineConstants>
-    <OutputPath>../../build/il2cpp/</OutputPath>
+    <OutputPath>../build/il2cpp/</OutputPath>
   </PropertyGroup>
 
   <!-- Mono-specific references -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="MelonLoader">
       <HintPath>../libs/mono/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>../libs/mono/0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -38,6 +43,10 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <Reference Include="MelonLoader">
       <HintPath>../libs/il2cpp/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>../libs/il2cpp/0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -58,6 +67,14 @@
     </Reference>
     <Reference Include="Il2CppInterop.HarmonySupport">
       <HintPath>../libs/il2cpp/Il2CppInterop.HarmonySupport.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>../libs/il2cpp/Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>../libs/il2cpp/Il2CppSystem.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

@@ -9,6 +9,7 @@ using ScheduleOne;  // Verify namespace!
 
 namespace ScheduleIMod.Patches
 {
+#if FALSE  // Disabled until real game classes are identified with dnSpy
     /// <summary>
     /// [EXAMPLE] Prefix patch that modifies behavior BEFORE original method runs
     /// Returning false skips the original method entirely
@@ -39,4 +40,5 @@ namespace ScheduleIMod.Patches
             }
         }
     }
+#endif
 }

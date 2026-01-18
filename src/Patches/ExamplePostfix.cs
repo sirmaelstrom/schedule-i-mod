@@ -9,6 +9,7 @@ using ScheduleOne.Persistence;  // Verify namespace!
 
 namespace ScheduleIMod.Patches
 {
+#if FALSE  // Disabled until real game classes are identified with dnSpy
     /// <summary>
     /// [EXAMPLE] Postfix patch that runs AFTER original method
     /// Can access and modify the return value with __result
@@ -37,4 +38,5 @@ namespace ScheduleIMod.Patches
             }
         }
     }
+#endif
 }

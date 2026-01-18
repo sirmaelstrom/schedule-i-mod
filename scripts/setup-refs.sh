@@ -43,6 +43,14 @@ else
     echo "  ✗ MelonLoader.dll (net6) not found"
 fi
 
+# Copy 0Harmony.dll (net6)
+if [ -f "$GAME_DIR/MelonLoader/net6/0Harmony.dll" ]; then
+    echo "  ✓ 0Harmony.dll (net6)"
+    cp "$GAME_DIR/MelonLoader/net6/0Harmony.dll" libs/il2cpp/
+else
+    echo "  ✗ 0Harmony.dll (net6) not found"
+fi
+
 # Copy IL2CPP Interop DLLs (CRITICAL - these are in net6/, not Il2CppAssemblies/)
 if [ -f "$GAME_DIR/MelonLoader/net6/Il2CppInterop.Runtime.dll" ]; then
     echo "  ✓ Il2CppInterop.Runtime.dll"
@@ -71,6 +79,13 @@ if [ -d "$GAME_DIR/MelonLoader/Il2CppAssemblies" ]; then
     echo "  ✓ UnityEngine.CoreModule.dll (unhollowed)"
     cp "$GAME_DIR/MelonLoader/Il2CppAssemblies/UnityEngine.CoreModule.dll" libs/il2cpp/
 
+    # Copy IL2CPP system assemblies (required for Il2CppSystem types)
+    echo "  ✓ Il2Cppmscorlib.dll"
+    cp "$GAME_DIR/MelonLoader/Il2CppAssemblies/Il2Cppmscorlib.dll" libs/il2cpp/
+
+    echo "  ✓ Il2CppSystem.dll"
+    cp "$GAME_DIR/MelonLoader/Il2CppAssemblies/Il2CppSystem.dll" libs/il2cpp/
+
     # Copy other Unity modules if needed (optional)
     # cp "$GAME_DIR/MelonLoader/Il2CppAssemblies/UnityEngine.UI.dll" libs/il2cpp/ 2>/dev/null || true
 else
@@ -87,6 +102,14 @@ if [ -f "$GAME_DIR/MelonLoader/net35/MelonLoader.dll" ]; then
     cp "$GAME_DIR/MelonLoader/net35/MelonLoader.dll" libs/mono/
 else
     echo "  ✗ MelonLoader.dll (net35) not found"
+fi
+
+# Copy 0Harmony.dll (net35)
+if [ -f "$GAME_DIR/MelonLoader/net35/0Harmony.dll" ]; then
+    echo "  ✓ 0Harmony.dll (net35)"
+    cp "$GAME_DIR/MelonLoader/net35/0Harmony.dll" libs/mono/
+else
+    echo "  ✗ 0Harmony.dll (net35) not found"
 fi
 
 # Copy Mono assemblies (beta "alternate" branch only)
