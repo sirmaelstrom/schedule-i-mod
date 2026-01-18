@@ -16,6 +16,9 @@ libs/
 .idea/
 *.sln.DotSettings.user
 
+# Git worktrees
+.worktrees/
+
 # OS
 .DS_Store
 Thumbs.db
