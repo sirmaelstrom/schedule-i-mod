@@ -1,0 +1,13 @@
+# Ensure bash scripts use LF line endings (WSL requirement)
+*.sh text eol=lf
+
+# Standard .NET files
+*.cs text diff=csharp
+*.csproj text
+*.sln text
+
+# Binary files
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
