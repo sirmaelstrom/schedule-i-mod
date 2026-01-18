@@ -1,0 +1,116 @@
+# Schedule I Mod
+
+A MelonLoader mod for Schedule I that supports both Mono (beta) and IL2CPP (production) builds.
+
+## Features
+
+- Example prefix patch (deal validation bypass)
+- Example postfix patch (save game event logging)
+- IL2CPP pattern examples
+- Multi-target build system (Mono + IL2CPP)
+
+## Installation
+
+### For Users
+1. Download the latest release
+2. Extract to `<Schedule I>/Mods/` folder
+3. Launch the game
+
+### For Developers
+See [Development Setup](#development-setup)
+
+## Development Setup
+
+### Prerequisites
+- .NET 6.0 SDK
+- .NET Framework 4.7.2 Developer Pack
+- Rider IDE or Visual Studio
+- WSL Ubuntu (recommended)
+- Schedule I with MelonLoader 0.7.1 installed
+
+### First-Time Setup
+
+1. **Install MelonLoader on Schedule I**:
+   - Download MelonLoader 0.7.1 from [Thunderstore](https://thunderstore.io/c/schedule-i/p/LavaGang/MelonLoader/)
+   - Run the installer and point it to your game directory
+   - Launch the game once to generate unhollowed assemblies
+
+2. **Verify game namespaces** (important!):
+   - Switch to beta "alternate" branch in Steam for Mono build
+   - Download [dnSpy](https://github.com/dnSpy/dnSpy/releases)
+   - Open `<game>/Schedule I_Data/Managed/Assembly-CSharp.dll`
+   - Verify the root namespace (guide assumes `ScheduleOne`)
+   - Update `using` statements in code if different
+
+3. **Clone and setup**:
+   ```bash
+   cd ~/projects
+   git clone <your-repo>
+   cd schedule-i-mod
+   chmod +x scripts/*.sh
+   ```
+
+4. **Setup game assembly references**:
+
+   **For IL2CPP** (main/production branch):
+   ```bash
+   ./scripts/setup-refs.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I"
+   ```
+
+   **For Mono** (beta "alternate" branch):
+   - Switch branch in Steam (Properties → Betas → "alternate")
+   - Run game once
+   - Run setup script again:
+   ```bash
+   ./scripts/setup-refs.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I"
+   ```
+
+   **Note**: Adjust drive letter (`/mnt/e/`, `/mnt/c/`, etc.) to match your Steam library location.
+
+5. **Build**:
+   ```bash
+   ./scripts/build.sh
+   ```
+
+6. **Deploy and test**:
+   ```bash
+   # For IL2CPP (default)
+   ./scripts/deploy.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I" il2cpp
+
+   # For Mono
+   ./scripts/deploy.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I" mono
+   ```
+
+### Development Workflow
+
+1. Edit code in `src/`
+2. Run `./scripts/build.sh`
+3. Run `./scripts/deploy.sh "<game_dir>" il2cpp`
+4. Launch game and check MelonLoader console
+5. Check `<game>/MelonLoader/Latest.log` for detailed output
+
+### Switching Between IL2CPP and Mono
+
+**To test Mono branch**:
+1. Steam: Schedule I → Properties → Betas → Select "alternate"
+2. Run game once to regenerate assemblies
+3. Re-run `./scripts/setup-refs.sh "<game_dir>"`
+4. Build and deploy with `mono` parameter
+
+**To return to IL2CPP**:
+1. Steam: Schedule I → Properties → Betas → "None"
+2. Build and deploy with `il2cpp` parameter (or omit for default)
+
+## Configuration
+
+Settings are stored in: `<Schedule I>/UserData/MelonPreferences.cfg`
+
+## Known Issues
+
+- Example patches reference game classes that may not exist (Customer, LoadManager)
+- Namespaces must be verified with dnSpy before building
+
+## Credits
+
+- Based on [S1 Modding Wiki](https://s1modding.github.io/)
+- Powered by MelonLoader 0.7.1 and HarmonyX
