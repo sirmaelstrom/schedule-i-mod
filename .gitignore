@@ -1,0 +1,21 @@
+# Build outputs
+bin/
+obj/
+build/
+
+# Libraries (not redistributable - run setup-refs.sh after clone)
+libs/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Rider
+.idea/
+*.sln.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
