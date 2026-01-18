@@ -3,9 +3,9 @@
 ## Next Steps
 
 1. **Find Game Directory**: Locate your Schedule I installation
-   - Common locations: `/mnt/c/Program Files (x86)/Steam/steamapps/common/Schedule I/`
-   - Or: `/mnt/e/steamlibrary/steamapps/common/Schedule I/`
-   - Check with: `find /mnt -name "Schedule I" -type d 2>/dev/null`
+   - Common Steam location: `/mnt/c/Program Files (x86)/Steam/steamapps/common/Schedule I/`
+   - Or custom library: `/mnt/<drive>/SteamLibrary/steamapps/common/Schedule I/`
+   - Find it: `find /mnt -name "Schedule I" -type d 2>/dev/null`
 
 2. **Verify MelonLoader Installed**: Check if MelonLoader exists
    ```bash

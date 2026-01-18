@@ -50,22 +50,26 @@ See [Development Setup](#development-setup)
    chmod +x scripts/*.sh
    ```
 
-4. **Setup game assembly references**:
+4. **Setup game assembly references** (REQUIRED before building):
 
    **For IL2CPP** (main/production branch):
    ```bash
-   ./scripts/setup-refs.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I"
+   ./scripts/setup-refs.sh "<GAME_DIR>"
    ```
+   Example: `./scripts/setup-refs.sh "/mnt/c/SteamLibrary/steamapps/common/Schedule I"`
 
    **For Mono** (beta "alternate" branch):
    - Switch branch in Steam (Properties → Betas → "alternate")
    - Run game once
    - Run setup script again:
    ```bash
-   ./scripts/setup-refs.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I"
+   ./scripts/setup-refs.sh "<GAME_DIR>"
    ```
 
-   **Note**: Adjust drive letter (`/mnt/e/`, `/mnt/c/`, etc.) to match your Steam library location.
+   **Note**: Replace `<GAME_DIR>` with your Schedule I installation path. Common locations:
+   - `/mnt/c/Program Files (x86)/Steam/steamapps/common/Schedule I`
+   - `/mnt/c/SteamLibrary/steamapps/common/Schedule I`
+   - Use `find /mnt -name "Schedule I" -type d 2>/dev/null` to locate it
 
 5. **Build**:
    ```bash
@@ -75,10 +79,10 @@ See [Development Setup](#development-setup)
 6. **Deploy and test**:
    ```bash
    # For IL2CPP (default)
-   ./scripts/deploy.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I" il2cpp
+   ./scripts/deploy.sh "<GAME_DIR>" il2cpp
 
    # For Mono
-   ./scripts/deploy.sh "/mnt/e/steamlibrary/steamapps/common/Schedule I" mono
+   ./scripts/deploy.sh "<GAME_DIR>" mono
    ```
 
 ### Development Workflow
