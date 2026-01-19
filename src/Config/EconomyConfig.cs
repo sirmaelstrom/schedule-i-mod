@@ -48,14 +48,12 @@ namespace ScheduleIMod.Config
 
         private static void OnCooldownMultiplierChanged(float oldValue, float newValue)
         {
-            // TODO: Uncomment after DebugLogger is implemented
-            // Utils.DebugLogger.Log($"Deal cooldown changed: {oldValue:F1}x -> {newValue:F1}x ({CurrentCooldownSeconds:F0}s)");
+            Utils.DebugLogger.Log($"Deal cooldown changed: {oldValue:F1}x -> {newValue:F1}x ({CurrentCooldownSeconds:F0}s)");
         }
 
         private static void OnDebugLogLevelChanged(DebugLogLevel oldValue, DebugLogLevel newValue)
         {
-            // TODO: Uncomment after DebugLogger is implemented
-            // Utils.DebugLogger.Log($"Debug log level changed: {oldValue} -> {newValue}");
+            Utils.DebugLogger.Log($"Debug log level changed: {oldValue} -> {newValue}");
         }
     }
 }
