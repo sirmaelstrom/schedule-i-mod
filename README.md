@@ -30,6 +30,21 @@ Adjust the cooldown timer between customer deals:
 - Testable business logic separation
 - Harmony patching examples
 
+## Planned Features
+
+### Enhanced Console Command Interface
+
+Improve the in-game console experience with:
+
+- **Command History**: Navigate recent commands with arrow keys (Up/Down)
+  - Persistent history across game sessions
+  - Configurable history size
+
+- **Autocomplete Support**: Tab completion for commands and parameters
+  - Command name completion
+  - Parameter suggestions based on available options
+  - Smart context-aware suggestions
+
 ## Installation
 
 ### For Users
