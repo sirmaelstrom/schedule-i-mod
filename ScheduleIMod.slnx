@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ScheduleIMod.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ScheduleIMod.Tests/ScheduleIMod.Tests.csproj" />
+  </Folder>
+</Solution>
