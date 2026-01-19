@@ -30,6 +30,10 @@ namespace ScheduleIMod
             LoggerInstance.Msg($"Game Version: {Application.version}");
             LoggerInstance.Msg($"Unity Version: {Application.unityVersion}");
             LoggerInstance.Msg("=================================");
+
+            // Initialize economy configuration
+            Config.EconomyConfig.Initialize();
+            LoggerInstance.Msg($"Economy config initialized - Cooldown multiplier: {Config.EconomyConfig.CooldownMultiplier}x");
         }
 
         public override void OnLateInitializeMelon()
