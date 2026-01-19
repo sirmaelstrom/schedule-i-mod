@@ -8,7 +8,7 @@ using Il2CppInterop.Runtime.Injection;
 using ScheduleOne;  // Verify this namespace with dnSpy!
 #endif
 
-[assembly: MelonInfo(typeof(ScheduleIMod.ModMain), "ScheduleIMod", "0.1.0", "YourName")]
+[assembly: MelonInfo(typeof(ScheduleIMod.ModMain), "ScheduleIMod", "0.1.0", "Sirmaelstrom")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace ScheduleIMod
