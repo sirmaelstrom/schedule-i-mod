@@ -24,7 +24,21 @@ namespace ScheduleIMod.Logic
                 return false;
             }
 
-            // Placeholder for cooldown checks (will implement next)
+            // Scale the cooldown checks
+            float scaledCooldown = ScaleCooldown(360f, cooldownMultiplier);
+
+            if (timeSinceLastCompleted < scaledCooldown)
+            {
+                invalidReason = $"Customer recently completed a deal (cooldown: {scaledCooldown:F0}s)";
+                return false;
+            }
+
+            if (timeSinceLastOffered < scaledCooldown && !hasPendingInstantDeal)
+            {
+                invalidReason = $"Already recently offered (cooldown: {scaledCooldown:F0}s)";
+                return false;
+            }
+
             return true;
         }
     }
