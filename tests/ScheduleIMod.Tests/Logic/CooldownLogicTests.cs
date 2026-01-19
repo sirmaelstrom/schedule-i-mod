@@ -16,5 +16,21 @@ namespace ScheduleIMod.Tests.Logic
             var result = CooldownLogic.ScaleCooldown(360f, multiplier);
             result.Should().Be(expected);
         }
+
+        [Fact]
+        public void ShouldAllowDeal_BlocksWhenPendingOfferExists()
+        {
+            var result = CooldownLogic.ShouldAllowDeal(
+                timeSinceLastCompleted: 1000f,
+                timeSinceLastOffered: 1000f,
+                hasPendingOffer: true,
+                hasPendingInstantDeal: false,
+                cooldownMultiplier: 0.0f,
+                out string invalidReason
+            );
+
+            result.Should().BeFalse();
+            invalidReason.Should().Contain("pending offer");
+        }
     }
 }

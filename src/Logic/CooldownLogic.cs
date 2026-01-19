@@ -6,5 +6,26 @@ namespace ScheduleIMod.Logic
         {
             return baseSeconds * multiplier;
         }
+
+        public static bool ShouldAllowDeal(
+            float timeSinceLastCompleted,
+            float timeSinceLastOffered,
+            bool hasPendingOffer,
+            bool hasPendingInstantDeal,
+            float cooldownMultiplier,
+            out string invalidReason)
+        {
+            invalidReason = string.Empty;
+
+            // Always respect pending offer check (game logic safety)
+            if (hasPendingOffer)
+            {
+                invalidReason = "Customer already has a pending offer";
+                return false;
+            }
+
+            // Placeholder for cooldown checks (will implement next)
+            return true;
+        }
     }
 }
