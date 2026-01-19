@@ -4,10 +4,31 @@ A MelonLoader mod for Schedule I that supports both Mono (beta) and IL2CPP (prod
 
 ## Features
 
-- Example prefix patch (deal validation bypass)
-- Example postfix patch (save game event logging)
-- IL2CPP pattern examples
+### Configurable Deal Cooldown
+
+Adjust the cooldown timer between customer deals:
+
+- **Cooldown Multiplier**: Scale deal cooldowns from instant (0.0x) to double (2.0x)
+  - 0.0 = Instant deals (no cooldown)
+  - 0.5 = Half cooldown (180 seconds)
+  - 1.0 = Vanilla behavior (360 seconds)
+  - 2.0 = Harder mode (720 seconds)
+
+- **Debug Logging**: Choose logging verbosity
+  - None = Silent operation
+  - Console = MelonLoader console logs only
+  - Toast = Console + in-game notifications
+
+**Hot Reload**: Settings changes apply immediately without restarting the game.
+
+**Mod Manager**: Configure settings through the [Schedule I Mod Manager](https://github.com/Prowiler/schedule1-mod-manager-wiki) under the "Economy" category.
+
+### Development Features
+
 - Multi-target build system (Mono + IL2CPP)
+- xUnit test project with FluentAssertions
+- Testable business logic separation
+- Harmony patching examples
 
 ## Installation
 
@@ -109,10 +130,16 @@ See [Development Setup](#development-setup)
 
 Settings are stored in: `<Schedule I>/UserData/MelonPreferences.cfg`
 
+**Economy Category Settings:**
+- `DealCooldownMultiplier` (float, default: 1.0) - Scales customer deal cooldowns
+- `DebugLogLevel` (enum, default: None) - Controls debug logging verbosity
+
+Edit the file manually or use the [Schedule I Mod Manager](https://github.com/Prowiler/schedule1-mod-manager-wiki) for a GUI. Changes apply immediately without restarting the game.
+
 ## Known Issues
 
-- Example patches reference game classes that may not exist (Customer, LoadManager)
 - Namespaces must be verified with dnSpy before building
+- Toast notifications (in-game messages) not yet implemented - currently logs to console as fallback
 
 ## Credits
 
