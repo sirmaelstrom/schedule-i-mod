@@ -1,0 +1,56 @@
+# Local Machine Configuration
+
+**This file is gitignored** - Contains machine-specific paths and settings that should not be committed.
+
+## Setup
+
+1. Copy this file to `local.config.md`
+2. Update paths below with your actual game installation location
+3. Use `local.config.md` for reference during development
+
+## Game Directory
+
+**Schedule I Installation Path** (Windows):
+```
+E:\SteamLibrary\steamapps\common\Schedule I
+```
+
+**WSL Path** (for scripts):
+```
+/mnt/e/SteamLibrary/steamapps/common/Schedule I
+```
+
+Common locations to check:
+- `C:\Program Files (x86)\Steam\steamapps\common\Schedule I`
+- `/mnt/c/Program Files (x86)/Steam/steamapps/common/Schedule I` (WSL)
+- Custom Steam library: `<drive>:\SteamLibrary\steamapps\common\Schedule I`
+- Find it: `find /mnt -name "Schedule I" -type d 2>/dev/null`
+
+## Setup Commands
+
+```bash
+# Setup game references (replace path with your local.config.md path)
+./scripts/setup-refs.sh "/mnt/e/SteamLibrary/steamapps/common/Schedule I"
+
+# Build project
+./scripts/build.sh
+
+# Deploy to game (replace path with your local.config.md path)
+./scripts/deploy.sh "/mnt/e/SteamLibrary/steamapps/common/Schedule I" il2cpp
+```
+
+## MelonLoader Status
+
+Track MelonLoader setup progress:
+- [ ] MelonLoader installed
+- [ ] Game run once to generate unhollowed assemblies
+- [ ] References copied to libs/ directory
+
+## Notes
+
+Add any machine-specific notes, issues, or configuration here.
+
+Examples:
+- Known issues on this machine
+- Custom build configurations
+- Testing notes

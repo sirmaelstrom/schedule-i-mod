@@ -1,11 +1,20 @@
 # Development Notes
 
+## Local Configuration
+
+**Machine-specific settings** are stored in `local.config.md` (gitignored for safety).
+
+Check `local.config.md` for:
+- Game directory path (Windows and WSL)
+- Setup command examples with actual paths
+- MelonLoader installation status
+
 ## Next Steps
 
-1. **Find Game Directory**: Locate your Schedule I installation
+1. **Verify Game Directory**: Check `local.config.md` for your Schedule I installation path
    - Common Steam location: `/mnt/c/Program Files (x86)/Steam/steamapps/common/Schedule I/`
-   - Or custom library: `/mnt/<drive>/SteamLibrary/steamapps/common/Schedule I/`
-   - Find it: `find /mnt -name "Schedule I" -type d 2>/dev/null`
+   - Custom library example: `/mnt/e/SteamLibrary/steamapps/common/Schedule I/`
+   - If path missing: `find /mnt -name "Schedule I" -type d 2>/dev/null`
 
 2. **Verify MelonLoader Installed**: Check if MelonLoader exists
    ```bash

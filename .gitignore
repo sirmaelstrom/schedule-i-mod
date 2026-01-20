@@ -25,3 +25,8 @@ Thumbs.db
 
 # Claude Code CLI
 .claude/
+
+# Local machine-specific configuration (not committed for safety)
+local.config.md
+.env.local
+*.local.json

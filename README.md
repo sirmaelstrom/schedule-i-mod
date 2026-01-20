@@ -107,7 +107,13 @@ See [Development Setup](#development-setup)
    chmod +x scripts/*.sh
    ```
 
-4. **Setup game assembly references** (REQUIRED before building):
+4. **Create local configuration** (stores machine-specific paths, gitignored for safety):
+   ```bash
+   cp local.config.md.example local.config.md
+   # Edit local.config.md and update game directory path
+   ```
+
+5. **Setup game assembly references** (REQUIRED before building):
 
    **For IL2CPP** (main/production branch):
    ```bash
@@ -123,17 +129,17 @@ See [Development Setup](#development-setup)
    ./scripts/setup-refs.sh "<GAME_DIR>"
    ```
 
-   **Note**: Replace `<GAME_DIR>` with your Schedule I installation path. Common locations:
+   **Note**: Replace `<GAME_DIR>` with your Schedule I installation path (see `local.config.md`). Common locations:
    - `/mnt/c/Program Files (x86)/Steam/steamapps/common/Schedule I`
    - `/mnt/c/SteamLibrary/steamapps/common/Schedule I`
    - Use `find /mnt -name "Schedule I" -type d 2>/dev/null` to locate it
 
-5. **Build**:
+6. **Build**:
    ```bash
    ./scripts/build.sh
    ```
 
-6. **Deploy and test**:
+7. **Deploy and test**:
    ```bash
    # For IL2CPP (default)
    ./scripts/deploy.sh "<GAME_DIR>" il2cpp
