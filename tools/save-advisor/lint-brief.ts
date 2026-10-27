@@ -16,13 +16,17 @@ try {
     for (const c of play.citations) {
       if (typeof c.pointer !== 'string' || !c.pointer.startsWith('/')) throw new Error(`brief $.plays[${i}]: invalid pointer`);
       if (c.pointer.startsWith('/customers/') || c.pointer.startsWith('/products/prices/')) throw new Error(`brief $.plays[${i}]: use stable ID-keyed citation ${c.pointer}`);
+      const parts=c.pointer.slice(1).split('/').map((x:string)=>x.replace(/~1/g,'/').replace(/~0/g,'~'));
+      if (parts.at(-1) !== 'value') throw new Error(`brief $.plays[${i}]: cite a field value ${c.pointer}`);
       let v:any=digest;
-      for (const part of c.pointer.slice(1).split('/').map((x:string)=>x.replace(/~1/g,'/').replace(/~0/g,'~'))) {
+      for (const part of parts.slice(0,-1)) {
+        if (Array.isArray(v)) throw new Error(`brief $.plays[${i}]: array-index citation is unstable ${c.pointer}`);
         if (v === null || typeof v !== 'object' || !Object.hasOwn(v,part)) throw new Error(`brief $.plays[${i}]: missing digest field ${c.pointer}`);
         v=v[part];
       }
-      if (v === 'unknown') throw new Error(`brief $.plays[${i}]: cannot cite unknown ${c.pointer}`);
-      if (JSON.stringify(v) !== JSON.stringify(c.value)) throw new Error(`brief $.plays[${i}]: value mismatch ${c.pointer}`);
+      if (!v || typeof v !== 'object' || !Object.hasOwn(v,'value') || typeof v.source !== 'string' || typeof v.known !== 'boolean') throw new Error(`brief $.plays[${i}]: not a sourced field ${c.pointer}`);
+      if (!v.known) throw new Error(`brief $.plays[${i}]: cannot cite unknown ${c.pointer}`);
+      if (JSON.stringify(v.value) !== JSON.stringify(c.value)) throw new Error(`brief $.plays[${i}]: value mismatch ${c.pointer}`);
     }
     for (const rule of play.rules) if (!rules.has(rule)) throw new Error(`brief $.plays[${i}]: unknown mechanics rule ${rule}`);
   }

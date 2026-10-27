@@ -1,12 +1,12 @@
 # Mechanics evidence
 
-Installed game: Steam build `25796331`, IL2CPP. Save version: `0.4.7f12`.
+Installed game: Steam build `25796331`, IL2CPP.
 
 Save version: `0.4.7f12`
 
 ## M1: Deal-offer eligibility (installed IL2CPP build 25796331)
 
-Source: local Cpp2IL 2022.1.0-pre-release.21 ISIL dump of installed build 25796331, `ScheduleOne.Economy.Customer.OfferDealValid`, instructions 24–48, and `get_TimeSinceLastDealCompleted` / `get_TimeSinceInstantDealOffered`. The first getter reads offset 316, compared with 360; below 360 the method returns false with “Customer recently completed a deal”. It also rejects a pending offer, and checks offset 328 (the instant-offer getter) against 360, with an exception controlled by another flag whose meaning is not established here. This is a static analysis of this build, not a runtime experiment. The unit and exact save-to-runtime mapping have not been independently proved; don't convert the threshold to real time or assume an eligible offer will succeed. The older [Mono analysis](../../docs/Game-Analysis.md) is separately build-unspecified.
+Source: local Cpp2IL 2022.1.0-pre-release.21 ISIL dump of installed build 25796331: `ScheduleOne.Economy.Customer.OfferDealValid`, instructions 24–48; `CustomerData` constructor; `Customer.Load`, instructions 100–113; and the `get_TimeSinceLastDealCompleted` / `get_TimeSinceInstantDealOffered` getters. The constructor and load instructions map the saved elapsed fields to offsets 316 and 328. The method rejects the completed-deal value below 360, rejects a pending offer, and checks the instant-offer value against 360 with an exception controlled by another flag whose meaning is not established here. This is static analysis, not a runtime experiment. The unit is unproved; don't convert the threshold to real time or assume an eligible offer will succeed. The older [Mono analysis](../../docs/Game-Analysis.md) is separately build-unspecified.
 
 ## M2: Cash balance changes (Mono evidence only)
 

@@ -3,9 +3,9 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 type Json = any;
-type Field = { value: Json; source: string };
-const field = (value: Json, source: string): Field => ({ value, source });
-const unknown = (source: string): Field => field('unknown', source);
+type Field = { value: Json; source: string; known: boolean };
+const field = (value: Json, source: string): Field => ({ value, source, known:true });
+const unknown = (source: string): Field => ({value:'unknown',source,known:false});
 function fail(file: string, p: string, why: string): never { throw new Error(`${file} ${p}: ${why}`); }
 function read(root: string, file: string): Json {
   let text: string;
@@ -57,6 +57,14 @@ function extract(root: string, mechanicsPath: string): Json {
     if (Object.hasOwn(pricesById,id)) fail('Products.json',product.id.source,'duplicate product ID');
     pricesById[id] = product;
   }
+  const receiptsById: Record<string, Json> | Field = Array.isArray(products.ContractReceipts) ? Object.create(null) : unknown('Products.json:$.ContractReceipts');
+  if (!Object.hasOwn(receiptsById,'known')) products.ContractReceipts.forEach((receipt: Json,i: number) => {
+    const p=`Products.json:$.ContractReceipts[${i}]`;
+    if (typeof receipt?.ReceiptId !== 'number' || !Number.isFinite(receipt.ReceiptId)) return;
+    const id=String(receipt.ReceiptId);
+    if (Object.hasOwn(receiptsById,id)) fail('Products.json',`${p}.ReceiptId`,'duplicate receipt ID');
+    (receiptsById as Record<string, Json>)[id]={id:field(receipt.ReceiptId,`${p}.ReceiptId`),customer:optional(receipt,'CustomerId',p),amountPaid:optional(receipt,'AmountPaid',p)};
+  });
   const customers: Json[] = [];
   required(npcs,'NPCs','array','NPCs.json').forEach((v: Json, i: number) => {
     const p = `$.NPCs[${i}]`, base = nested(v?.BaseData,'NPCs.json',`${p}.BaseData`);
@@ -75,20 +83,36 @@ function extract(root: string, mechanicsPath: string): Json {
   const properties = fs.existsSync(propertiesDir) ? fs.readdirSync(propertiesDir).filter(x => x.endsWith('.json')).sort().map(file => {
     const name = `Properties/${file}`, v = read(root,name), source = `${name}:$`;
     const objects = Array.isArray(v.Objects) ? v.Objects.map((obj: Json,i: number) => {
-      const p = `$.Objects[${i}].BaseData`, base = nested(obj.BaseData,name,p);
-      const item = nested(base.ItemString,name,`${p}::$.ItemString`);
-      return { type:optional(obj,'DataType',`${name}:$.Objects[${i}]`), item:optional(item,'ID',`${name}:${p}::$.ItemString::$`) };
+      const p = `$.Objects[${i}].BaseData`, sourcePath=`${name}:${p}::$.ItemString::$.ID`;
+      let item: Field;
+      try {
+        const base = nested(obj?.BaseData,name,p);
+        const decoded = nested(base?.ItemString,name,`${p}::$.ItemString`);
+        item = optional(decoded,'ID',`${name}:${p}::$.ItemString::$`);
+      } catch { item = unknown(sourcePath); }
+      return { type:optional(obj,'DataType',`${name}:$.Objects[${i}]`), item };
     }) : unknown(`${source}.Objects`);
-    return { code:optional(v,'PropertyCode',source), owned:optional(v,'IsOwned',source), employees:optional(v,'Employees',source), employeeCount:Array.isArray(v.Employees) ? field(v.Employees.length,`${source}.Employees.length`) : unknown(`${source}.Employees`), objects };
+    const canCount = Array.isArray(objects) && objects.every((o: Json)=>o.item.known && typeof o.item.value === 'string');
+    const itemCounts: Record<string, Field> | Field = canCount ? Object.create(null) : unknown(`${source}.Objects[*].BaseData::$.ItemString::$.ID (count)`);
+    if (canCount) {
+      for (const obj of objects) { const id=obj.item.value; itemCounts[id]=field((itemCounts[id]?.value ?? 0)+1,`${source}.Objects[*].BaseData::$.ItemString::$.ID (count)`); }
+    }
+    return { code:optional(v,'PropertyCode',source), owned:optional(v,'IsOwned',source), employees:optional(v,'Employees',source), employeeCount:Array.isArray(v.Employees) ? field(v.Employees.length,`${source}.Employees.length`) : unknown(`${source}.Employees`), objects, itemCounts };
   }) : unknown('Properties/:$');
   const delivery = optionalFile(root,'Deliveries.json'), law = optionalFile(root,'Law.json'), cartel = optionalFile(root,'Cartel.json');
+  const propertiesByCode: Record<string, Json> = Object.create(null);
+  if (Array.isArray(properties)) for (const prop of properties) {
+    if (!prop.code.known || typeof prop.code.value !== 'string') continue;
+    if (Object.hasOwn(propertiesByCode,prop.code.value)) fail('Properties/',prop.code.source,'duplicate property code');
+    propertiesByCode[prop.code.value] = prop;
+  }
   const customersById: Record<string, Json> = Object.create(null);
   for (const customer of customers) {
     const id = customer.id.value;
     if (Object.hasOwn(customersById,id)) fail('NPCs.json',customer.id.source,'duplicate customer ID');
     customersById[id] = customer;
   }
-  return { version:field(version,'Game.json:$.GameVersion'), mechanicsVersion:mech, warning:version === mech ? null : `WARNING: save version ${version} differs from mechanics version ${mech}; rules may not apply.`, day, timeOfDay, economy, products:{ discovered:field(discovered,'Products.json:$.DiscoveredProducts'), recipes:field(recipes,'Products.json:$.MixRecipes'), prices, pricesById }, customers, customersById, properties, deliveries:{ active:optional(delivery,'ActiveDeliveries','Deliveries.json:$') }, law:{ intensity:optional(law,'InternalLawIntensity','Law.json:$') }, cartel:{ status:optional(cartel,'Status','Cartel.json:$'), influence:optional(cartel,'RegionInfluence','Cartel.json:$') } };
+  return { version:field(version,'Game.json:$.GameVersion'), mechanicsVersion:mech, warning:version === mech ? null : `WARNING: save version ${version} differs from mechanics version ${mech}; rules may not apply.`, day, timeOfDay, economy, products:{ discovered:field(discovered,'Products.json:$.DiscoveredProducts'), recipes:field(recipes,'Products.json:$.MixRecipes'), prices, pricesById, receiptsById }, customers, customersById, properties, propertiesByCode, deliveries:{ active:optional(delivery,'ActiveDeliveries','Deliveries.json:$') }, law:{ intensity:optional(law,'InternalLawIntensity','Law.json:$') }, cartel:{ status:optional(cartel,'Status','Cartel.json:$'), influence:optional(cartel,'RegionInfluence','Cartel.json:$') } };
 }
 function main(): void {
   const [input, output] = process.argv.slice(2);
