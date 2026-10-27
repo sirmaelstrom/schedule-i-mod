@@ -4,9 +4,9 @@ Installed game: Steam build `25796331`, IL2CPP. Save version: `0.4.7f12`.
 
 Save version: `0.4.7f12`
 
-## M1: Deal-offer eligibility (Mono evidence only)
+## M1: Deal-offer eligibility (installed IL2CPP build 25796331)
 
-In `ScheduleOne.Economy.Customer.OfferDealValid`, the Mono decompilation in [Game-Analysis.md](../../docs/Game-Analysis.md) checks elapsed time since the last completed deal, an existing offered contract, and time since an instant deal offer. This source does not identify the Mono build and does not prove the installed IL2CPP build behaves the same way. Treat applicability to build 25796331 as **unverified**.
+Source: local Cpp2IL 2022.1.0-pre-release.21 ISIL dump of installed build 25796331, `ScheduleOne.Economy.Customer.OfferDealValid`, instructions 24–48, and `get_TimeSinceLastDealCompleted` / `get_TimeSinceInstantDealOffered`. The first getter reads offset 316, compared with 360; below 360 the method returns false with “Customer recently completed a deal”. It also rejects a pending offer, and checks offset 328 (the instant-offer getter) against 360, with an exception controlled by another flag whose meaning is not established here. This is a static analysis of this build, not a runtime experiment. The unit and exact save-to-runtime mapping have not been independently proved; don't convert the threshold to real time or assume an eligible offer will succeed. The older [Mono analysis](../../docs/Game-Analysis.md) is separately build-unspecified.
 
 ## M2: Cash balance changes (Mono evidence only)
 

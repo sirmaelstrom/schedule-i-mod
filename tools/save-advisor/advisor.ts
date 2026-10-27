@@ -51,6 +51,12 @@ function extract(root: string, mechanicsPath: string): Json {
     const p = `$.ProductPrices[${i}]`;
     return { id: field(required(v,'String','string','Products.json',p),`Products.json:${p}.String`), price: field(required(v,'Int','number','Products.json',p),`Products.json:${p}.Int`) };
   });
+  const pricesById: Record<string, Json> = Object.create(null);
+  for (const product of prices) {
+    const id = product.id.value;
+    if (Object.hasOwn(pricesById,id)) fail('Products.json',product.id.source,'duplicate product ID');
+    pricesById[id] = product;
+  }
   const customers: Json[] = [];
   required(npcs,'NPCs','array','NPCs.json').forEach((v: Json, i: number) => {
     const p = `$.NPCs[${i}]`, base = nested(v?.BaseData,'NPCs.json',`${p}.BaseData`);
@@ -59,12 +65,11 @@ function extract(root: string, mechanicsPath: string): Json {
     const ci = additional.findIndex((x: Json) => x?.Name === 'CustomerData');
     if (ci < 0) return;
     const ri = additional.findIndex((x: Json) => x?.Name === 'Relationship');
-    if (ri < 0) return fail('NPCs.json',`${p}.AdditionalDatas[Relationship]`,'required relationship for customer');
     const cp = `${p}.AdditionalDatas[${ci}].Contents`, rp = `${p}.AdditionalDatas[${ri}].Contents`;
-    const c = nested(additional[ci].Contents,'NPCs.json',cp), rel = nested(additional[ri].Contents,'NPCs.json',rp);
+    const c = nested(additional[ci].Contents,'NPCs.json',cp), rel = ri < 0 ? undefined : nested(additional[ri].Contents,'NPCs.json',rp);
     const cf = (key: string, type: 'number'|'array') => field(required(c,key,type,'NPCs.json',`${cp}::$`),`NPCs.json:${cp}::$.${key}`);
-    const rf = (key: string, type: 'number'|'boolean') => field(required(rel,key,type,'NPCs.json',`${rp}::$`),`NPCs.json:${rp}::$.${key}`);
-    customers.push({ id:field(id,`NPCs.json:${p}.BaseData::$.ID`), relationship:rf('RelationDelta','number'), unlocked:rf('Unlocked','boolean'), dependence:cf('Dependence','number'), affinities:cf('ProductAffinities','array'), lastDeal:cf('TimeSinceLastDealCompleted','number'), completedDeals:optional(c,'CompletedDeals',`NPCs.json:${cp}::$`), region:unknown(`NPCs.json:${p}::region (not stored in supported data)`) });
+    const rf = (key: string, type: 'number'|'boolean') => ri < 0 ? unknown(`NPCs.json:${p}.AdditionalDatas[Relationship]::$.${key}`) : field(required(rel,key,type,'NPCs.json',`${rp}::$`),`NPCs.json:${rp}::$.${key}`);
+    customers.push({ id:field(id,`NPCs.json:${p}.BaseData::$.ID`), relationship:rf('RelationDelta','number'), unlocked:rf('Unlocked','boolean'), dependence:cf('Dependence','number'), affinities:cf('ProductAffinities','array'), lastDeal:cf('TimeSinceLastDealCompleted','number'), sinceInstantOffer:optional(c,'TimeSinceInstantDealOffered',`NPCs.json:${cp}::$`), contractOffered:optional(c,'IsContractOffered',`NPCs.json:${cp}::$`), completedDeals:optional(c,'CompletedDeals',`NPCs.json:${cp}::$`), region:unknown(`NPCs.json:${p}::region (not stored in supported data)`) });
   });
   const propertiesDir = path.join(root,'Properties');
   const properties = fs.existsSync(propertiesDir) ? fs.readdirSync(propertiesDir).filter(x => x.endsWith('.json')).sort().map(file => {
@@ -74,10 +79,16 @@ function extract(root: string, mechanicsPath: string): Json {
       const item = nested(base.ItemString,name,`${p}::$.ItemString`);
       return { type:optional(obj,'DataType',`${name}:$.Objects[${i}]`), item:optional(item,'ID',`${name}:${p}::$.ItemString::$`) };
     }) : unknown(`${source}.Objects`);
-    return { code:optional(v,'PropertyCode',source), owned:optional(v,'IsOwned',source), employees:optional(v,'Employees',source), objects };
+    return { code:optional(v,'PropertyCode',source), owned:optional(v,'IsOwned',source), employees:optional(v,'Employees',source), employeeCount:Array.isArray(v.Employees) ? field(v.Employees.length,`${source}.Employees.length`) : unknown(`${source}.Employees`), objects };
   }) : unknown('Properties/:$');
   const delivery = optionalFile(root,'Deliveries.json'), law = optionalFile(root,'Law.json'), cartel = optionalFile(root,'Cartel.json');
-  return { version:field(version,'Game.json:$.GameVersion'), mechanicsVersion:mech, warning:version === mech ? null : `WARNING: save version ${version} differs from mechanics version ${mech}; rules may not apply.`, day, timeOfDay, economy, products:{ discovered:field(discovered,'Products.json:$.DiscoveredProducts'), recipes:field(recipes,'Products.json:$.MixRecipes'), prices }, customers, properties, deliveries:{ active:optional(delivery,'ActiveDeliveries','Deliveries.json:$') }, law:{ intensity:optional(law,'InternalLawIntensity','Law.json:$') }, cartel:{ status:optional(cartel,'Status','Cartel.json:$'), influence:optional(cartel,'RegionInfluence','Cartel.json:$') } };
+  const customersById: Record<string, Json> = Object.create(null);
+  for (const customer of customers) {
+    const id = customer.id.value;
+    if (Object.hasOwn(customersById,id)) fail('NPCs.json',customer.id.source,'duplicate customer ID');
+    customersById[id] = customer;
+  }
+  return { version:field(version,'Game.json:$.GameVersion'), mechanicsVersion:mech, warning:version === mech ? null : `WARNING: save version ${version} differs from mechanics version ${mech}; rules may not apply.`, day, timeOfDay, economy, products:{ discovered:field(discovered,'Products.json:$.DiscoveredProducts'), recipes:field(recipes,'Products.json:$.MixRecipes'), prices, pricesById }, customers, customersById, properties, deliveries:{ active:optional(delivery,'ActiveDeliveries','Deliveries.json:$') }, law:{ intensity:optional(law,'InternalLawIntensity','Law.json:$') }, cartel:{ status:optional(cartel,'Status','Cartel.json:$'), influence:optional(cartel,'RegionInfluence','Cartel.json:$') } };
 }
 function main(): void {
   const [input, output] = process.argv.slice(2);
