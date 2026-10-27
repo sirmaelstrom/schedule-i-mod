@@ -3,7 +3,8 @@
 Named checks: elapsed days, online balance, lifetime earnings, OG Kush price,
 Sour Diesel price, relationship, dependence and time since last completed deal
 of the first customer with nonzero dependence, another customer's dependence,
-and the motel's placed-object count. These are raw values or direct counts, not rates.
+and the motel's plastic-pot count, independently decoded through BaseData and
+ItemString JSON strings. These are raw values or direct counts, not rates.
 The day-2 motel has no employees and there are no active deliveries, so object
 count and a second customer's dependence replace those empty examples.
 """
@@ -38,7 +39,7 @@ checks = [
     ('selected customer dependence', parts['CustomerData']['Dependence'], customer['dependence']['value']),
     ('selected customer time since last deal', parts['CustomerData']['TimeSinceLastDealCompleted'], customer['lastDeal']['value']),
     ('second customer dependence', second_raw, second_digest),
-    ('motel placed-object count', len(property_raw['Objects']), len(property_digest['objects'])),
+    ('motel plastic-pot count', sum(json.loads(json.loads(x['BaseData'])['ItemString'])['ID'] == 'plasticpot' for x in property_raw['Objects']), sum(x['item']['value'] == 'plasticpot' and x['item']['known'] for x in property_digest['objects'])),
 ]
 rows = [{'name': name, 'raw': raw, 'digest': actual, 'match': raw == actual} for name, raw, actual in checks]
 output.parent.mkdir(parents=True, exist_ok=True)

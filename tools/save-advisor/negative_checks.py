@@ -35,7 +35,9 @@ with tempfile.TemporaryDirectory(prefix='advisor-red-') as tmp:
         raise RuntimeError('price mutation precondition: initial reader failed: ' + initial['stderr'])
     original = json.loads((out / 'digest.json').read_text(encoding='utf-8'))
     product = read('Products.json')
-    price = next(x for x in product['ProductPrices'] if x['String'] == 'ogkush')
+    price = next((x for x in product['ProductPrices'] if x['String'] == 'ogkush'), None)
+    if price is None:
+        raise RuntimeError('price mutation precondition: Products.json $.ProductPrices: ogkush not found')
     old = price['Int']; price['Int'] = old + 1; write('Products.json', product)
     r = run()
     if r['exit'] != 0:

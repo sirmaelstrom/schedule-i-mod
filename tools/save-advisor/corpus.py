@@ -59,15 +59,23 @@ for host in ('flagg', 'roland'):
                     npc_doc = json.loads((save / 'NPCs.json').read_text(encoding='utf-8-sig'))
                     customers = [n for n in npc_doc['NPCs'] if any(a.get('Name') == 'CustomerData' for a in n.get('AdditionalDatas', []))]
                     relation = {'present': sum(any(a.get('Name') == 'Relationship' for a in n['AdditionalDatas']) for n in customers), 'absent': sum(not any(a.get('Name') == 'Relationship' for a in n['AdditionalDatas']) for n in customers)}
+                    nested = {key: {'present': 0, 'absent': 0, 'malformed': 0} for key in ('Dependence','ProductAffinities','TimeSinceLastDealCompleted','TimeSinceInstantDealOffered','CompletedDeals')}
+                    for npc in customers:
+                        try:
+                            customer_data = json.loads(next(a['Contents'] for a in npc['AdditionalDatas'] if a.get('Name') == 'CustomerData'))
+                            for key in nested:
+                                nested[key]['present' if key in customer_data else 'absent'] += 1
+                        except (KeyError, StopIteration, TypeError, ValueError):
+                            for value in nested.values(): value['malformed'] += 1
                 except (OSError, ValueError, TypeError, KeyError):
-                    relation = None
+                    relation, nested = None, {}
                 result = subprocess.run(['node', str(reader), str(save), str(root / 'digest')], capture_output=True, text=True, encoding='utf-8')
-                rows.append({'host': host, 'entry': name, 'version': version, 'status': 'parse' if result.returncode == 0 else 'fail', 'detail': result.stderr.strip(), 'exit': result.returncode, 'fieldPresence': presence, 'customerRelationships': relation})
+                rows.append({'host': host, 'entry': name, 'version': version, 'status': 'parse' if result.returncode == 0 else 'fail', 'detail': result.stderr.strip(), 'exit': result.returncode, 'fieldPresence': presence, 'customerRelationships': relation, 'nestedCustomerFields': nested})
             except (OSError, ValueError, zipfile.BadZipFile) as e:
                 rows.append({'host': host, 'entry': name, 'version': 'unknown', 'status': 'fail', 'detail': str(e), 'exit': 1})
 if len(rows) != sum(v['slots'] + v['zips'] for v in discovered.values()):
     raise SystemExit('corpus accounting mismatch')
-groups = defaultdict(lambda: {'parse': 0, 'fail': 0, 'errors': set(), 'fields': defaultdict(lambda: {'present': 0, 'absent': 0}), 'relationships': {'present': 0, 'absent': 0}})
+groups = defaultdict(lambda: {'parse': 0, 'fail': 0, 'errors': set(), 'fields': defaultdict(lambda: {'present': 0, 'absent': 0}), 'relationships': {'present': 0, 'absent': 0}, 'nested': defaultdict(lambda: {'present': 0, 'absent': 0, 'malformed': 0})})
 for row in rows:
     g = groups[row['version']]
     g[row['status']] += 1
@@ -77,8 +85,10 @@ for row in rows:
         g['fields'][key]['present' if present else 'absent'] += 1
     for key, value in (row.get('customerRelationships') or {}).items():
         g['relationships'][key] += value
-table = [{'version': version, 'parse': group['parse'], 'fail': group['fail'], 'errors': sorted(group['errors']), 'fieldPresence': dict(group['fields']), 'customerRelationships': group['relationships']} for version, group in sorted(groups.items())]
+    for field_name, counts in row.get('nestedCustomerFields', {}).items():
+        for status, count in counts.items(): g['nested'][field_name][status] += count
+table = [{'version': version, 'parse': group['parse'], 'fail': group['fail'], 'errors': sorted(group['errors']), 'fieldPresence': dict(group['fields']), 'customerRelationships': group['relationships'], 'nestedCustomerFields': dict(group['nested'])} for version, group in sorted(groups.items())]
 (output / 'corpus.json').write_text(json.dumps({'discovered': discovered, 'rows': rows, 'byVersion': table}, indent=2) + '\n', encoding='utf-8')
 print(f"accounted={len(rows)} parsed={sum(r['status']=='parse' for r in rows)} failed={sum(r['status']=='fail' for r in rows)}")
 for row in table:
-    print(f"{row['version']}: parse={row['parse']} fail={row['fail']}; " + '; '.join(row['errors']))
+    print(f"{row['version']}: parse={row['parse']} fail={row['fail']} relationship-absent={row['customerRelationships']['absent']}; " + '; '.join(row['errors']))
