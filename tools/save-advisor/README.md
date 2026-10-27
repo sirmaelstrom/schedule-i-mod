@@ -1,0 +1,7 @@
+# Save advisor contract
+
+Run on Node.js 24 or later: `node advisor.ts <save-directory> <output-directory>`. The input is copied to a temporary directory first. Outputs contain private save data; choose a private output directory outside the repository. Never point the output at a save directory.
+
+The required first slice is: `Game.json` `$.GameVersion`; `Time.json` `$.ElapsedDays`, `$.TimeOfDay`; `Money.json` `$.OnlineBalance`, `$.Networth`, `$.LifetimeEarnings`, `$.WeeklyDepositSum`; `Products.json` `$.DiscoveredProducts`, `$.MixRecipes`, `$.ProductPrices` (each price has `String` and `Int`); `NPCs.json` `$.NPCs`, each `BaseData` JSON `ID`, and `AdditionalDatas`; when a customer entry exists, its JSON `Dependence`, `ProductAffinities`, and `TimeSinceLastDealCompleted`. A present relationship entry requires `RelationDelta` and `Unlocked`; an absent entry is unknown, not evidence of an unmet customer. Required fields have the expected type. Unsupported or absent optional values are represented by `{ "value": "unknown", "source": "...", "known": false }`, not zero. A known literal string `unknown` has `known: true`. Paths after `::` address JSON encoded inside a string.
+
+Each value in the digest carries its source path. Version warnings compare the save version with the version declared in `mechanics.md`; Steam build identifiers and save version strings are different identifiers. The snapshot is not a live view, and a cash balance is not profit per day.
