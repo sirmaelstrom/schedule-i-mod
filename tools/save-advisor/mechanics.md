@@ -19,3 +19,7 @@ The developer's [Steam description](https://store.steampowered.com/app/3164500/S
 ## M4: Properties and workers
 
 The developer's [Steam description](https://store.steampowered.com/app/3164500/Schedule_I/) describes purchasable properties and recruitable workers and dealers. This is a general public description, not a method-level verification of build 25796331; exact costs, unlocks and returns are **unverified** for that build.
+
+## M5: Pot seed acceptance (installed IL2CPP build 25796331)
+
+Source: local Cpp2IL ISIL dump of installed build 25796331, `ScheduleOne.ObjectScripts.Pot.CanAcceptSeed`, instructions 26–60. The method rejects a pot that is not fully filled with soil and one already containing a seed. This is static analysis; the saved item's ID-to-runtime-class mapping and any other planting requirements have not been verified.
