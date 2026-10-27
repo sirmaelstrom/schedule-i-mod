@@ -30,18 +30,21 @@ with tempfile.TemporaryDirectory(prefix='advisor-red-') as tmp:
         return json.loads((save / name).read_text(encoding='utf-8-sig'))
     def run():
         return call('node', str(reader), str(save), str(out))
-    assert run()['exit'] == 0
+    initial = run()
+    if initial['exit'] != 0:
+        raise RuntimeError('price mutation precondition: initial reader failed: ' + initial['stderr'])
     original = json.loads((out / 'digest.json').read_text(encoding='utf-8'))
     product = read('Products.json')
     price = next(x for x in product['ProductPrices'] if x['String'] == 'ogkush')
     old = price['Int']; price['Int'] = old + 1; write('Products.json', product)
-    r = run(); assert r['exit'] == 0
+    r = run()
+    if r['exit'] != 0:
+        raise RuntimeError('price mutation precondition: mutated reader failed: ' + r['stderr'])
     changed = json.loads((out / 'digest.json').read_text(encoding='utf-8'))
     before = next(x['price']['value'] for x in original['products']['prices'] if x['id']['value'] == 'ogkush')
     after = next(x['price']['value'] for x in changed['products']['prices'] if x['id']['value'] == 'ogkush')
-    red = call(sys.executable, '-I', '-X', 'utf8', '-c', 'import sys; assert sys.argv[1] == sys.argv[2], "old price assertion failed"', str(before), str(after))
-    red['stdout'] = f'original={before} mutated={after}; ' + red['stdout']
-    record('product price mutation: old-value assertion', red, 'exit 1 / FAIL')
+    mutation_ok = before == old and after == old + 1
+    record('product price mutation: changed same product', {'exit': 0 if mutation_ok else 1, 'stdout': f'product=ogkush original={before} mutated={after} expected={old + 1}', 'stderr': '' if mutation_ok else 'mutation did not propagate exactly'}, 'exit 0 and changed value')
     price['Int'] = old; write('Products.json', product)
     money = read('Money.json'); (save / 'Money.json').unlink()
     record('missing file', run(), 'nonzero refusal naming Money.json $')
@@ -69,8 +72,8 @@ with tempfile.TemporaryDirectory(prefix='advisor-red-') as tmp:
     record('fabricated rule', lint_run(), 'nonzero unknown mechanics rule')
 (output / 'negative-checks.json').write_text(json.dumps(results, indent=2) + '\n', encoding='utf-8')
 for r in results:
-    print(f"{r['name']}: exit={r['exit']} {r.get('header', '')} {r['stderr']}")
-ok = (results[0]['exit'] != 0 and all(results[i]['exit'] != 0 for i in (1,2,3,7,8))
+    print(f"{r['name']}: exit={r['exit']} {r['stdout']} {r.get('header', '')} {r['stderr']}")
+ok = (results[0]['exit'] == 0 and all(results[i]['exit'] != 0 for i in (1,2,3,7,8))
       and all(results[i]['exit'] == 0 and 'WARNING' in results[i]['header'] for i in (4,5))
       and results[6]['exit'] == 0 and after == before + 1
       and 'Money.json $:' in results[1]['stderr']

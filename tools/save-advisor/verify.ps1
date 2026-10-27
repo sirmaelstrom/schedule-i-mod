@@ -40,6 +40,7 @@ SaveManifest $localBefore 'flagg-before.json'
 SaveManifest $remoteBefore 'roland-before.json'
 $steps=[ordered]@{}
 try {
+  $steps.cleanBefore = if (@(& git -C $here status --porcelain --untracked-files=normal).Count -eq 0) { 0 } else { 1 }
   & node --test (Join-Path $here 'advisor.test.ts') *> (Join-Path $Output 'tests.txt'); $steps.tests=$LASTEXITCODE
   & node (Join-Path $here 'advisor.ts') (Join-Path $Snapshot 'flagg/SaveGame_4') (Join-Path $Output 'slot4') *> (Join-Path $Output 'slot4.txt'); $steps.slot4=$LASTEXITCODE
   & node (Join-Path $here 'advisor.ts') (Join-Path $Snapshot 'flagg/SaveGame_1') (Join-Path $Output 'slot1') *> (Join-Path $Output 'slot1.txt'); $steps.slot1=$LASTEXITCODE
@@ -47,6 +48,7 @@ try {
   & python -I -X utf8 (Join-Path $here 'crosscheck.py') (Join-Path $Snapshot 'flagg/SaveGame_4') (Join-Path $Output 'slot4/digest.json') (Join-Path $Output 'crosscheck.json') *> (Join-Path $Output 'crosscheck.txt'); $steps.crosscheck=$LASTEXITCODE
   & python -I -X utf8 (Join-Path $here 'negative_checks.py') (Join-Path $Snapshot 'flagg/SaveGame_4') $Brief $Output *> (Join-Path $Output 'negative.txt'); $steps.negative=$LASTEXITCODE
   & node (Join-Path $here 'lint-brief.ts') $Brief (Join-Path $Output 'slot4/digest.json') *> (Join-Path $Output 'brief-lint.txt'); $steps.brief=$LASTEXITCODE
+  $steps.cleanAfter = if (@(& git -C $here status --porcelain --untracked-files=normal).Count -eq 0) { 0 } else { 1 }
 } finally {
   $localAfter=LocalManifest $LiveFlagg
   $remoteAfter=RemoteManifest
@@ -55,7 +57,7 @@ try {
   $localSame=SameManifest $localBefore $localAfter
   $remoteSame=SameManifest $remoteBefore $remoteAfter
   $sha=(& git -C $here rev-parse HEAD).Trim()
-  $ok=($steps.Count -eq 7 -and @($steps.Values | Where-Object { $_ -ne 0 }).Count -eq 0 -and $localSame -and $remoteSame)
+  $ok=($steps.Count -eq 9 -and @($steps.Values | Where-Object { $_ -ne 0 }).Count -eq 0 -and $localSame -and $remoteSame)
   [pscustomobject]@{ok=$ok; commit=$sha; steps=$steps; flaggUnchanged=$localSame; rolandUnchanged=$remoteSame; evidence=$Output} | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $Output 'verdict.json')
 }
 if (!$ok) { exit 1 }
